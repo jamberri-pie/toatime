@@ -49,8 +49,10 @@ public class ToatimePlugin extends Plugin
 	private static final int PLAYER_GIVEN_SIGHT_ID = 2132;
 	private static final int PLAYER_REMOVE_SIGHT_ID = 2133;
 	private static final int TOA_APMEKEN_ID = 15186;
-	private static final LocalPoint PILLAR_LOCATION_POINT = new LocalPoint(28, 24);
-	private static final LocalPoint VENT_LOCATION_POINT = new LocalPoint(40, 36);
+	private static final int TOA_LOBBY_ID = 13454;
+	private static final int TOA_NEXUS_ID = 14160;
+	private static final LocalPoint PILLAR_LOCATION_POINT = new LocalPoint(7744, 7232);
+	private static final LocalPoint VENT_LOCATION_POINT = new LocalPoint(7232, 5696);
 
 	public ToatimePlugin() {}
 
@@ -74,10 +76,13 @@ public class ToatimePlugin extends Plugin
 		if(!inToaRaid) return;
 		if (soundEffectPlayed.getSoundId() == SIGHT_SOUND_EFFECT_ID) {
 			checkSightTiles();
+			log.info(callout);
 			switch (callout) {
 				case "PILLARS": 		playSound("pillars");
+				client.addChatMessage(ChatMessageType.PUBLICCHAT, "Craig King", "Pillars, pillars, pillars.", null);
 										break;
 				case "VENTS": 			playSound("vents");
+				client.addChatMessage(ChatMessageType.PUBLICCHAT, "Craig King", "Vents, vents, vents.", null);
 										break;
 				case "DD": 				playSound("DD");
 										break;
@@ -92,7 +97,7 @@ public class ToatimePlugin extends Plugin
 	 * Listener for events to see if in raid
 	 */
 	@Subscribe
-	public void onVarbitChanged() {
+	public void onVarbitChanged(VarbitChanged varbitValueChanged) {
 		checkInRaid();
 	}
 
@@ -102,7 +107,8 @@ public class ToatimePlugin extends Plugin
 	 */
 	private void checkInRaid() {
 		if(client.getGameState() != GameState.LOGGED_IN) return;
-		if (getRegion() == TOA_APMEKEN_ID) {
+		if(getRegion() == TOA_LOBBY_ID) resetState();
+		if (getRegion() == TOA_NEXUS_ID || getRegion() == TOA_APMEKEN_ID) {
 			inToaRaid = true;
 		}
 		else resetState();
@@ -131,14 +137,19 @@ public class ToatimePlugin extends Plugin
 	 * changed to either DD or Sight Change
 	 */
 	private void checkSightTiles() {
+		log.info("Checking Sight Tiles");
 		Deque<GraphicsObject> graphicObjects = client.getGraphicsObjects();
 		graphicObjects.forEach(graphicsObject -> {
+			log.info("GraphicObjectID: " + graphicsObject.getId());
 			if (graphicsObject.getId() == SKULL_1_GRAPHICS_OBJECT_ID
 					|| graphicsObject.getId() == SKULL_2_GRAPHICS_OBJECT_ID) {
-				if (graphicsObject.getLocation() == PILLAR_LOCATION_POINT) {
+				log.info("Recognized pillar/vent skulls at location: " + graphicsObject.getLocation());
+				if (graphicsObject.getLocation().equals(PILLAR_LOCATION_POINT)) {
+					log.info("New callout: PILLARS");
 					callout = "PILLARS";
 					return;
-				} else if (graphicsObject.getLocation() == VENT_LOCATION_POINT) {
+				} else if (graphicsObject.getLocation().equals(VENT_LOCATION_POINT)) {
+					log.info("New callout: VENTS");
 					callout = "VENTS";
 					return;
 				}
