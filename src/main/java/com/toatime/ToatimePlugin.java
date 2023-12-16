@@ -136,8 +136,8 @@ public class ToatimePlugin extends Plugin
 
 	/**
 	 * Gets a list of all currently drawn GraphicObjects. If Sight Skull is drawn, checks the location of it to
-	 * determine whether it is pillars or vents. If no Sight Skull, checks if all raiding player's Spot Animation has
-	 * changed to either DD or Sight Change
+	 * determine whether it is pillars or vents. Checks if sight has changed and sets flag accordingly. DD if has sight
+	 * and no other new callouts
 	 */
 	private void checkSightTiles() {
 		callout = "DEFAULT";
