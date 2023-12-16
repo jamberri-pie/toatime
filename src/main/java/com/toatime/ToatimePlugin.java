@@ -39,20 +39,22 @@ public class ToatimePlugin extends Plugin
 	@Getter
 	@VisibleForTesting
 	private boolean inToaRaid;
-	private String callout = null;
+	private String callout = "DEFAULT";
+	private boolean hasSight = false;
 
 	private static final int SKULL_1_GRAPHICS_OBJECT_ID = 2134;
 	private static final int SKULL_2_GRAPHICS_OBJECT_ID = 2135;
 	private static final int SIGHT_SOUND_EFFECT_ID = 6574;
 	private static final int PLAYER_SIGHT_ANIMATION_ID = 2132;
-	private static final int PLAYER_DD_ID = 2137;
-	private static final int PLAYER_GIVEN_SIGHT_ID = 2132;
-	private static final int PLAYER_REMOVE_SIGHT_ID = 2133;
+	//private static final int PLAYER_DD_ID = 2137;
+	private static final int PLAYER_REMOVE_SIGHT_ANIMATION_ID = 2133;
 	private static final int TOA_APMEKEN_ID = 15186;
 	private static final int TOA_LOBBY_ID = 13454;
 	private static final int TOA_NEXUS_ID = 14160;
 	private static final LocalPoint PILLAR_LOCATION_POINT = new LocalPoint(7744, 7232);
+	private static final LocalPoint PILLAR_LOCATION_POINT2 = new LocalPoint(7744, 8256);
 	private static final LocalPoint VENT_LOCATION_POINT = new LocalPoint(7232, 5696);
+	private static final LocalPoint VENT_LOCATION_POINT2 = new LocalPoint(7232, 7744);
 
 	public ToatimePlugin() {}
 
@@ -60,6 +62,8 @@ public class ToatimePlugin extends Plugin
 	protected void startUp() throws Exception
 	{
 		inToaRaid = false;
+		callout = "DEFAULT";
+		hasSight = false;
 
 		// if the plugin was turned on inside the raid, check if inside the raid
 		clientThread.invokeLater(this::checkInRaid);
@@ -86,7 +90,7 @@ public class ToatimePlugin extends Plugin
 										break;
 				case "DD": 				playSound("DD");
 										break;
-				case "SIGHT_CHANGE": 	//playSound("sight_change");
+				case "SIGHT_CHANGE": 	playSound("sightchange");
 										break;
 				default: 				break;
 			}
@@ -119,7 +123,7 @@ public class ToatimePlugin extends Plugin
 	 */
 	private void resetState() {
 		inToaRaid = false;
-		callout = null;
+		callout = "DEFAULT";
 	}
 
 	/**
@@ -137,6 +141,7 @@ public class ToatimePlugin extends Plugin
 	 * changed to either DD or Sight Change
 	 */
 	private void checkSightTiles() {
+		callout = "DEFAULT";
 		log.info("Checking Sight Tiles");
 		Deque<GraphicsObject> graphicObjects = client.getGraphicsObjects();
 		graphicObjects.forEach(graphicsObject -> {
@@ -144,27 +149,31 @@ public class ToatimePlugin extends Plugin
 			if (graphicsObject.getId() == SKULL_1_GRAPHICS_OBJECT_ID
 					|| graphicsObject.getId() == SKULL_2_GRAPHICS_OBJECT_ID) {
 				log.info("Recognized pillar/vent skulls at location: " + graphicsObject.getLocation());
-				if (graphicsObject.getLocation().equals(PILLAR_LOCATION_POINT)) {
+				if (graphicsObject.getLocation().equals(PILLAR_LOCATION_POINT) || graphicsObject.getLocation().equals(PILLAR_LOCATION_POINT2)) {
 					log.info("New callout: PILLARS");
 					callout = "PILLARS";
 					return;
-				} else if (graphicsObject.getLocation().equals(VENT_LOCATION_POINT)) {
+				}
+				if (graphicsObject.getLocation().equals(VENT_LOCATION_POINT) || graphicsObject.getLocation().equals(VENT_LOCATION_POINT2)) {
 					log.info("New callout: VENTS");
 					callout = "VENTS";
 					return;
 				}
 			}
 		});
-		//Check if DD if not pillars or vents
-		for(Player player : client.getPlayers()) {
-			if(player.hasSpotAnim(PLAYER_DD_ID)) {
-				callout = "DD";
-				return;
-			}
-			if(player.hasSpotAnim(PLAYER_SIGHT_ANIMATION_ID)) {
-				callout = "SIGHT_CHANGE";
-				return;
-			}
+		if (client.getLocalPlayer().hasSpotAnim(PLAYER_SIGHT_ANIMATION_ID)) {
+			callout = "SIGHT_CHANGE";
+			hasSight = true;
+			return;
+		}
+		if (client.getLocalPlayer().hasSpotAnim(PLAYER_REMOVE_SIGHT_ANIMATION_ID)) {
+			callout = "SIGHT_CHANGE";
+			hasSight = false;
+			return;
+		}
+		if (hasSight && callout.equals("DEFAULT")) {
+			callout = "DD";
+			return;
 		}
 	}
 
