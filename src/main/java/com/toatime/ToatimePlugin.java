@@ -80,7 +80,6 @@ public class ToatimePlugin extends Plugin
 		if(!inToaRaid) return;
 		if (soundEffectPlayed.getSoundId() == SIGHT_SOUND_EFFECT_ID) {
 			checkSightTiles();
-			log.info(callout);
 			switch (callout) {
 				case "PILLARS": 		playSound("pillars");
 				client.addChatMessage(ChatMessageType.PUBLICCHAT, "Craig King", "Pillars, pillars, pillars.", null);
@@ -142,20 +141,15 @@ public class ToatimePlugin extends Plugin
 	 */
 	private void checkSightTiles() {
 		callout = "DEFAULT";
-		log.info("Checking Sight Tiles");
 		Deque<GraphicsObject> graphicObjects = client.getGraphicsObjects();
 		graphicObjects.forEach(graphicsObject -> {
-			log.info("GraphicObjectID: " + graphicsObject.getId());
 			if (graphicsObject.getId() == SKULL_1_GRAPHICS_OBJECT_ID
 					|| graphicsObject.getId() == SKULL_2_GRAPHICS_OBJECT_ID) {
-				log.info("Recognized pillar/vent skulls at location: " + graphicsObject.getLocation());
 				if (graphicsObject.getLocation().equals(PILLAR_LOCATION_POINT) || graphicsObject.getLocation().equals(PILLAR_LOCATION_POINT2)) {
-					log.info("New callout: PILLARS");
 					callout = "PILLARS";
 					return;
 				}
 				if (graphicsObject.getLocation().equals(VENT_LOCATION_POINT) || graphicsObject.getLocation().equals(VENT_LOCATION_POINT2)) {
-					log.info("New callout: VENTS");
 					callout = "VENTS";
 					return;
 				}
